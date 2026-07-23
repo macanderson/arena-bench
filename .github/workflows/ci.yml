@@ -1,0 +1,51 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  rustfmt:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: cargo fmt --all -- --check
+
+  clippy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: Swatinem/rust-cache@v2
+      - run: cargo clippy --all-targets -- -D warnings
+
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: Swatinem/rust-cache@v2
+      - run: cargo test
+
+  demo:
+    name: demo suite (clean + chaos + misbehave caught)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: Swatinem/rust-cache@v2
+      - run: cargo build --bins
+      - name: Clean run is green in strict mode
+        run: cargo run -- run --suite suites/demo --adapter adapters/scripted.toml --strict
+      - name: Chaos kill + honest resume is green in strict mode
+        run: |
+          ARENA_SCRIPTED_SLEEP_MS=6000 \
+            cargo run -- run --suite suites/demo --adapter adapters/scripted.toml --chaos --strict
+      - name: A replayed side effect fails strict mode
+        run: |
+          if ARENA_SCRIPTED_MISBEHAVE=replay-effect ARENA_SCRIPTED_SLEEP_MS=6000 \
+            cargo run -- run --suite suites/demo --adapter adapters/scripted.toml --chaos --strict; then
+            echo "misbehaving agent was blessed — the runner failed its job" >&2
+            exit 1
+          fi

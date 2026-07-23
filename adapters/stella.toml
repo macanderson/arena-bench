@@ -1,0 +1,6 @@
+# Stella's arena port: `stella arena` speaks the adapter contract natively
+# (--task-dir / --journal / --state-dir / --resume) and records the
+# contextgraph-trace journal from its own event stream.
+[adapter]
+name = "stella"
+command = ["stella", "arena"]

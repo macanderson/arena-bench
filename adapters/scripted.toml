@@ -1,0 +1,6 @@
+# The bundled scripted example agent — a deterministic reference
+# implementation of the adapter contract. Build it first:
+#   cargo build --bin arena-scripted-agent
+[adapter]
+name = "scripted"
+command = ["target/debug/arena-scripted-agent"]

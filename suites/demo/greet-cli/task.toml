@@ -1,0 +1,25 @@
+[task]
+id = "greet-cli"
+prompt = """
+Create an executable POSIX shell script `greet.sh` in the workspace root.
+Running `./greet.sh <name>` must print exactly `hello, <name>` followed by a
+newline, for any single-word name.
+"""
+timeout_secs = 120
+
+# SIGKILL the agent 1.5–2.5s in, once, then re-invoke it with --resume.
+# Only exercised under `arena-bench run --chaos`. The window leaves cold-start
+# headroom so the kill lands mid-work, not before the agent has begun.
+[chaos]
+kill_window_secs = [1.5, 2.5]
+max_kills = 1
+
+[[milestones]]
+name = "greeter-exists"
+weight = 1
+verify = ["test", "-x", "greet.sh"]
+
+[[milestones]]
+name = "held-out-tests"
+weight = 3
+verify = ["sh", ".arena-verify/run.sh"]

@@ -1,0 +1,36 @@
+[package]
+name = "arena-bench"
+description = "Loop-integrity benchmark runner for coding agents: seeded tasks, held-out verification, chaos kill/resume, and execution-trace oracles from the Context Graph Protocol."
+version = "0.1.0"
+edition = "2024"
+rust-version = "1.90"
+license = "MIT OR Apache-2.0"
+repository = "https://github.com/macanderson/arena-bench"
+homepage = "https://github.com/macanderson/arena-bench"
+keywords = ["benchmark", "agents", "llm", "durability", "contextgraph"]
+categories = ["development-tools::testing", "command-line-utilities"]
+default-run = "arena-bench"
+
+[dependencies]
+# The execution-trace journal + replay oracles (sketch-stage crate, unpublished
+# — hence a git dependency on the protocol repo's default branch; Cargo.lock
+# pins the exact revision per build).
+contextgraph-trace = { git = "https://github.com/macanderson/context-graph-protocol" }
+contextgraph-types = { git = "https://github.com/macanderson/context-graph-protocol" }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+toml = "0.8"
+thiserror = "2"
+anyhow = "1"
+clap = { version = "4", features = ["derive"] }
+libc = "0.2"
+
+[dev-dependencies]
+tempfile = "3"
+
+# The scripted example agent — a deterministic adapter used by the end-to-end
+# tests and the demo suite. Same package so tests locate it via
+# env!("CARGO_BIN_EXE_arena-scripted-agent").
+[[bin]]
+name = "arena-scripted-agent"
+path = "src/bin/arena-scripted-agent.rs"
