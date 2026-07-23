@@ -141,6 +141,21 @@ fn a_frame_rendered_without_a_citation_is_caught() {
 }
 
 #[test]
+fn a_relative_out_dir_still_reaches_the_adapter_with_usable_paths() {
+    // The CI default (`--out results`) is relative; the adapter's cwd is the
+    // episode workspace, so every contract path must be absolutized by the
+    // runner. Regression test for the journal landing at a path that only
+    // resolved from the runner's cwd.
+    let manifest_dir = tempfile::tempdir().unwrap();
+    let out = PathBuf::from("target/e2e-relative-out");
+    let _ = std::fs::remove_dir_all(&out);
+    let config = RunConfig::new(suite_dir(), manifest(manifest_dir.path(), &[]), out.clone());
+    let report = run(&config).unwrap();
+    assert!(report.all_green(), "{}", report.to_markdown());
+    std::fs::remove_dir_all(&out).unwrap();
+}
+
+#[test]
 fn amnesic_and_persistent_arms_run_independent_state() {
     let out = tempfile::tempdir().unwrap();
     let mut config = RunConfig::new(

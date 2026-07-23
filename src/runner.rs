@@ -75,7 +75,13 @@ pub fn run(config: &RunConfig) -> Result<RunReport> {
     );
 
     let run_id = run_id();
-    let run_dir = config.out_dir.join(&run_id);
+    // Absolutize before any episode path derives from it: workspace, journal,
+    // and state paths are handed to an adapter whose cwd is the workspace, so
+    // a relative `--out` (the default, `results/`) would otherwise send the
+    // agent's journal to a path that only resolves from the runner's cwd.
+    let out_dir = std::path::absolute(&config.out_dir)
+        .with_context(|| format!("resolving {}", config.out_dir.display()))?;
+    let run_dir = out_dir.join(&run_id);
     std::fs::create_dir_all(&run_dir).with_context(|| format!("creating {}", run_dir.display()))?;
 
     let mut rng = SplitMix64::new(config.seed);
